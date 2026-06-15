@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="description" content="Aplicativo de respiração Pranayama com sons binaurais — inspira 5s, expira 12s."/>
+<title>Pranayama · Respiração Consciente</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap');
+
+  :root {
+    --green:    #1D9E75;
+    --green-lt: #E1F5EE;
+    --green-dk: #085041;
+    --bg:       #F7F8F6;
+    --surface:  #FFFFFF;
+    --text:     #1A1A1A;
+    --muted:    #6B7280;
+    --border:   rgba(0,0,0,0.10);
+    --radius:   14px;
+    --radius-sm:8px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:      #0F1512;
+      --surface: #1A2420;
+      --text:    #E8F0ED;
+      --muted:   #8BA89E;
+      --border:  rgba(255,255,255,0.10);
+      --green-lt:#0D3326;
+    }
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 1rem 3rem;
+  }
+
+  /* ── Header ── */
+  header {
+    width: 100%;
+    max-width: 480px;
+    padding: 2.2rem 0 1.6rem;
+    text-align: center;
+  }
+  header .eyebrow {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 8px;
+  }
+  header h1 {
+    font-size: 28px;
+    font-weight: 300;
+    letter-spacing: -0.5px;
+    color: var(--text);
+    line-height: 1.2;
+  }
+  header h1 strong { font-weight: 500; }
+  header p {
+    margin-top: 8px;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* ── Card ── */
+  .card {
+    width: 100%;
+    max-width: 480px;
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.8rem 1.6rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.3rem;
+  }
+
+  /* ── Section labels ── */
+  .label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    align-self: flex-start;
+  }
+
+  /* ── Button groups ── */
+  .btn-group {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+  }
+  .opt-btn {
+    padding: 8px 18px;
+    border-radius: var(--radius-sm);
+    border: 0.5px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all .15s;
+    line-height: 1.4;
+    text-align: center;
+  }
+  .opt-btn small {
+    display: block;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .opt-btn:hover { background: var(--green-lt); border-color: var(--green); }
+  .opt-btn.sel   { background: var(--green); color: #fff; border-color: var(--green); }
+  .opt-btn.sel small { color: rgba(255,255,255,.75); }
+
+  /* ── Info box ── */
+  .info-box {
+    width: 100%;
+    background: var(--green-lt);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    font-size: 12px;
+    color: var(--green-dk);
+    line-height: 1.6;
+  }
+  @media (prefers-color-scheme: dark) {
+    .info-box { color: #9FE1CB; }
+  }
+
+  /* ── Custom duration row ── */
+  .custom-row {
+    display: none;
+    align-items: center;
+    gap: 10px;
+  }
+  .custom-row input[type=number] {
+    width: 72px;
+    text-align: center;
+    font-size: 15px;
+    font-family: inherit;
+    padding: 7px 10px;
+    border-radius: var(--radius-sm);
+    border: 0.5px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+  }
+  .custom-row span { font-size: 13px; color: var(--muted); }
+
+  /* ── Volume sliders ── */
+  .vol-section { width: 100%; display: flex; flex-direction: column; gap: 10px; }
+  .vol-row { display: flex; align-items: center; gap: 12px; }
+  .vol-row label { font-size: 13px; color: var(--muted); min-width: 110px; }
+  .vol-row input[type=range] {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--border);
+    outline: none;
+    cursor: pointer;
+  }
+  .vol-row input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--green);
+    cursor: pointer;
+    border: 2px solid var(--surface);
+    box-shadow: 0 0 0 1px var(--green);
+  }
+
+  /* ── Headphone note ── */
+  .headphone-note {
+    font-size: 12px;
+    color: var(--green);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* ── Start button ── */
+  #start-btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: var(--radius-sm);
+    background: var(--green);
+    color: #fff;
+    border: none;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    letter-spacing: .2px;
+    transition: opacity .15s, transform .1s;
+  }
+  #start-btn:hover  { opacity: .92; }
+  #start-btn:active { transform: scale(.98); }
+
+  /* ── Rhythm preview ── */
+  .rhythm-strip {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    height: 6px;
+  }
+  .rhythm-inhale {
+    background: var(--green);
+    flex: 5;
+    height: 100%;
+  }
+  .rhythm-exhale {
+    background: var(--green-dk);
+    flex: 12;
+    height: 100%;
+    opacity: .5;
+  }
+  .rhythm-labels {
+    width: 100%;
+    display: flex;
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .rhythm-labels span:first-child { flex: 5; }
+  .rhythm-labels span:last-child  { flex: 12; text-align: right; }
+
+  /* ══ SESSION PANEL ══ */
+  #session-panel { display: none; }
+
+  #phase-label {
+    font-size: 24px;
+    font-weight: 300;
+    letter-spacing: 1px;
+    color: var(--text);
+    text-align: center;
+    min-height: 32px;
+  }
+
+  /* ── Canvas circle ── */
+  #canvas-wrap {
+    position: relative;
+    width: 220px;
+    height: 220px;
+  }
+  #breath-canvas { display: block; }
+  #phase-timer {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 40px;
+    font-weight: 300;
+    color: #fff;
+    pointer-events: none;
+    line-height: 1;
+    text-shadow: 0 1px 8px rgba(0,0,0,.2);
+  }
+
+  /* ── Live stats ── */
+  .live-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .pill {
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 0.5px solid var(--border);
+    color: var(--muted);
+    background: var(--bg);
+  }
+  .pill.green { color: var(--green); border-color: var(--green); }
+
+  /* ── Progress ── */
+  .progress-wrap {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .progress-bg {
+    width: 100%;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--border);
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 2px;
+    background: var(--green);
+    width: 0%;
+    transition: width .9s linear;
+  }
+  #time-left {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  #stop-btn {
+    padding: 9px 28px;
+    border-radius: var(--radius-sm);
+    border: 0.5px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-family: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background .15s;
+  }
+  #stop-btn:hover { background: var(--bg); }
+
+  /* ══ DONE PANEL ══ */
+  #done-panel {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    text-align: center;
+  }
+  .done-circle {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    background: var(--green-lt);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 30px;
+  }
+  #done-panel h3 { font-size: 20px; font-weight: 400; }
+  #done-panel p  { font-size: 14px; color: var(--muted); max-width: 280px; line-height: 1.7; }
+  #restart-btn {
+    padding: 11px 32px;
+    border-radius: var(--radius-sm);
+    background: var(--green);
+    color: #fff;
+    border: none;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity .15s;
+  }
+  #restart-btn:hover { opacity: .88; }
+
+  /* ── Footer ── */
+  footer {
+    margin-top: 2rem;
+    font-size: 11px;
+    color: var(--muted);
+    text-align: center;
+    line-height: 1.7;
+  }
+
+  /* ── Divider ── */
+  .divider {
+    width: 100%;
+    height: 0.5px;
+    background: var(--border);
+  }
+
+  @media (max-width: 480px) {
+    header h1 { font-size: 22px; }
+    .card { padding: 1.4rem 1.2rem; }
+    #phase-label { font-size: 20px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <p class="eyebrow">Pranayama</p>
+  <h1><strong>Respiração</strong> consciente</h1>
+  <p>Inspiração 5s · Expiração 12s<br>Sons de natureza + batidas binaurais</p>
+</header>
+
+<!-- ══ SETUP PANEL ══ -->
+<div class="card" id="setup-panel">
+
+  <span class="label">Faixa binaural</span>
+  <div class="btn-group" id="binaural-group">
+    <button class="opt-btn sel" data-mode="alpha">
+      Alpha <small>8–12 Hz · lucidez e calma</small>
+    </button>
+    <button class="opt-btn" data-mode="theta">
+      Theta <small>4–8 Hz · meditação profunda</small>
+    </button>
+    <button class="opt-btn" data-mode="delta">
+      Delta <small>1–4 Hz · relaxamento intenso</small>
+    </button>
+  </div>
+  <div class="info-box" id="binaural-info">
+    Começa em Alpha (10 Hz) e aprofunda suavemente para Theta ao longo da sessão.
+  </div>
+
+  <div class="divider"></div>
+
+  <span class="label">Duração</span>
+  <div class="btn-group" id="dur-group">
+    <button class="opt-btn sel" data-min="5">5 min</button>
+    <button class="opt-btn" data-min="10">10 min</button>
+    <button class="opt-btn" data-min="15">15 min</button>
+    <button class="opt-btn" data-min="0">Personalizado</button>
+  </div>
+  <div class="custom-row" id="custom-row">
+    <input type="number" id="custom-input" min="1" max="60" value="7"/>
+    <span>minutos</span>
+  </div>
+
+  <div class="divider"></div>
+
+  <span class="label">Volume</span>
+  <div class="vol-section">
+    <div class="vol-row">
+      <label>🌊 Sons da natureza</label>
+      <input type="range" id="vol-nature" min="0" max="1" step="0.05" value="0.45"/>
+    </div>
+    <div class="vol-row">
+      <label>🧠 Binaural</label>
+      <input type="range" id="vol-binaural" min="0" max="1" step="0.05" value="0.5"/>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <span class="label">Ritmo da sessão</span>
+  <div class="rhythm-strip">
+    <div class="rhythm-inhale"></div>
+    <div class="rhythm-exhale"></div>
+  </div>
+  <div class="rhythm-labels">
+    <span>Inspire · 5s</span>
+    <span>Expire · 12s</span>
+  </div>
+
+  <p class="headphone-note">🎧 Use fones de ouvido para o efeito binaural</p>
+
+  <button id="start-btn">Começar sessão</button>
+</div>
+
+<!-- ══ SESSION PANEL ══ -->
+<div class="card" id="session-panel">
+  <div id="phase-label">Prepare-se...</div>
+
+  <div id="canvas-wrap">
+    <canvas id="breath-canvas" width="220" height="220"></canvas>
+    <div id="phase-timer">-</div>
+  </div>
+
+  <div class="live-row">
+    <span class="pill green" id="binaural-live">— Hz</span>
+    <span class="pill" id="cycle-count">Ciclo 0</span>
+    <span class="pill" id="band-label">—</span>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-bg">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+    <span id="time-left">--:--</span>
+  </div>
+
+  <button id="stop-btn">Encerrar sessão</button>
+</div>
+
+<!-- ══ DONE PANEL ══ -->
+<div class="card" id="done-panel">
+  <div class="done-circle">🌿</div>
+  <h3>Sessão concluída</h3>
+  <p id="done-summary"></p>
+  <button id="restart-btn">Nova sessão</button>
+</div>
+
+<footer>
+  Pranayama · Respiração Consciente<br>
+  Sons gerados localmente via Web Audio API · Funciona offline
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ── Constants ── */
+  const INHALE = 5, EXHALE = 12;
+  const MODES = {
+    alpha: { label: 'Alpha', freqL: 200, beatStart: 10, beatEnd: 7,  endLabel: 'Theta',        info: 'Começa em Alpha (10 Hz) e aprofunda suavemente para Theta ao longo da sessão.' },
+    theta: { label: 'Theta', freqL: 180, beatStart: 6,  beatEnd: 4,  endLabel: 'Theta profundo', info: 'Começa em Theta médio (6 Hz) e aprofunda para Theta profundo (4 Hz) ao longo da sessão.' },
+    delta: { label: 'Delta', freqL: 160, beatStart: 3,  beatEnd: 1.5,endLabel: 'Delta profundo', info: 'Começa em Delta leve (3 Hz) e aprofunda para Delta profundo (1.5 Hz) ao longo da sessão.' },
+  };
+
+  /* ── State ── */
+  let binauralMode = 'alpha';
+  let selectedMin  = 5;
+  let volNature    = 0.45;
+  let volBinaural  = 0.5;
+  let isRunning    = false;
+  let audioCtx     = null;
+  let gainNature   = null, gainBinL = null, gainBinR = null;
+  let noiseSource  = null, filterNode = null;
+  let oscL = null, oscR = null;
+  let sessionStart = 0, sessionDuration = 0;
+  let phaseStart   = 0, phaseType = 'inhale';
+  let cycleCount   = 0;
+  let animFrame    = null;
+
+  /* ── DOM refs ── */
+  const setupPanel   = document.getElementById('setup-panel');
+  const sessionPanel = document.getElementById('session-panel');
+  const donePanel    = document.getElementById('done-panel');
+  const canvas       = document.getElementById('breath-canvas');
+  const ctx          = canvas.getContext('2d');
+  const phaseLabel   = document.getElementById('phase-label');
+  const phaseTimer   = document.getElementById('phase-timer');
+  const binauralLive = document.getElementById('binaural-live');
+  const bandLabel    = document.getElementById('band-label');
+  const cycleEl      = document.getElementById('cycle-count');
+  const progressFill = document.getElementById('progress-fill');
+  const timeLeft     = document.getElementById('time-left');
+  const doneSummary  = document.getElementById('done-summary');
+  const infoBox      = document.getElementById('binaural-info');
+
+  /* ── Binaural selector ── */
+  document.querySelectorAll('#binaural-group .opt-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#binaural-group .opt-btn').forEach(b => b.classList.remove('sel'));
+      btn.classList.add('sel');
+      binauralMode = btn.dataset.mode;
+      infoBox.textContent = MODES[binauralMode].info;
+    });
+  });
+
+  /* ── Duration selector ── */
+  document.querySelectorAll('#dur-group .opt-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#dur-group .opt-btn').forEach(b => b.classList.remove('sel'));
+      btn.classList.add('sel');
+      const m = parseInt(btn.dataset.min);
+      const customRow = document.getElementById('custom-row');
+      if (m === 0) {
+        customRow.style.display = 'flex';
+        selectedMin = parseInt(document.getElementById('custom-input').value) || 7;
+      } else {
+        customRow.style.display = 'none';
+        selectedMin = m;
+      }
+    });
+  });
+  document.getElementById('custom-input').addEventListener('input', function () {
+    selectedMin = parseInt(this.value) || 7;
+  });
+
+  /* ── Volume ── */
+  document.getElementById('vol-nature').addEventListener('input', function () {
+    volNature = parseFloat(this.value);
+    if (gainNature) gainNature.gain.setTargetAtTime(volNature * 0.022, audioCtx.currentTime, 0.1);
+  });
+  document.getElementById('vol-binaural').addEventListener('input', function () {
+    volBinaural = parseFloat(this.value);
+    const v = volBinaural * 0.13;
+    if (gainBinL) gainBinL.gain.setTargetAtTime(v, audioCtx.currentTime, 0.1);
+    if (gainBinR) gainBinR.gain.setTargetAtTime(v, audioCtx.currentTime, 0.1);
+  });
+
+  /* ── Buttons ── */
+  document.getElementById('start-btn').addEventListener('click', startSession);
+  document.getElementById('stop-btn').addEventListener('click', stopSession);
+  document.getElementById('restart-btn').addEventListener('click', resetToSetup);
+
+  /* ═══════════════════════════════
+     AUDIO ENGINE
+  ═══════════════════════════════ */
+  function startAudio() {
+    try {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const mode = MODES[binauralMode];
+
+      /* ─ Nature noise (pink-ish filtered white noise) ─ */
+      const sampleRate = audioCtx.sampleRate;
+      const bufSize = sampleRate * 4;
+      const buffer = audioCtx.createBuffer(1, bufSize, sampleRate);
+      const data = buffer.getChannelData(0);
+      let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+      for (let i = 0; i < bufSize; i++) {
+        const white = Math.random() * 2 - 1;
+        b0 = 0.99886*b0 + white*0.0555179;
+        b1 = 0.99332*b1 + white*0.0750759;
+        b2 = 0.96900*b2 + white*0.1538520;
+        b3 = 0.86650*b3 + white*0.3104856;
+        b4 = 0.55000*b4 + white*0.5329522;
+        b5 = -0.7616*b5 - white*0.0168980;
+        data[i] = (b0+b1+b2+b3+b4+b5+b6 + white*0.5362) * 0.11;
+        b6 = white * 0.115926;
+      }
+      noiseSource = audioCtx.createBufferSource();
+      noiseSource.buffer = buffer;
+      noiseSource.loop = true;
+
+      filterNode = audioCtx.createBiquadFilter();
+      filterNode.type = 'lowpass';
+      filterNode.frequency.value = 700;
+      filterNode.Q.value = 0.7;
+
+      const hp = audioCtx.createBiquadFilter();
+      hp.type = 'highpass';
+      hp.frequency.value = 90;
+
+      gainNature = audioCtx.createGain();
+      gainNature.gain.value = volNature * 0.022;
+
+      noiseSource.connect(filterNode);
+      filterNode.connect(hp);
+      hp.connect(gainNature);
+      gainNature.connect(audioCtx.destination);
+      noiseSource.start();
+
+      /* ─ Binaural beats ─ */
+      const merger = audioCtx.createChannelMerger(2);
+      merger.connect(audioCtx.destination);
+
+      const freqL      = mode.freqL;
+      const beatStart  = mode.beatStart;
+      const beatEnd    = mode.beatEnd;
+
+      oscL = audioCtx.createOscillator();
+      oscL.type = 'sine';
+      oscL.frequency.value = freqL;
+
+      oscR = audioCtx.createOscillator();
+      oscR.type = 'sine';
+      oscR.frequency.value = freqL + beatStart;
+
+      gainBinL = audioCtx.createGain();
+      gainBinR = audioCtx.createGain();
+      const bv = volBinaural * 0.13;
+      gainBinL.gain.value = bv;
+      gainBinR.gain.value = bv;
+
+      oscL.connect(gainBinL); gainBinL.connect(merger, 0, 0);
+      oscR.connect(gainBinR); gainBinR.connect(merger, 0, 1);
+
+      /* Schedule gradual deepening */
+      const t0 = audioCtx.currentTime;
+      oscR.frequency.setValueAtTime(freqL + beatStart, t0);
+      oscR.frequency.linearRampToValueAtTime(freqL + beatEnd, t0 + sessionDuration);
+
+      oscL.start(); oscR.start();
+
+    } catch (e) { console.warn('Audio error:', e); }
+  }
+
+  function playTone(freq, dur) {
+    if (!audioCtx) return;
+    try {
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = 'sine';
+      o.frequency.value = freq;
+      g.gain.setValueAtTime(0, audioCtx.currentTime);
+      g.gain.linearRampToValueAtTime(0.12, audioCtx.currentTime + 0.04);
+      g.gain.linearRampToValueAtTime(0, audioCtx.currentTime + dur);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(); o.stop(audioCtx.currentTime + dur + 0.05);
+    } catch (e) {}
+  }
+
+  function modulateNoise(phase) {
+    if (!filterNode || !audioCtx) return;
+    filterNode.frequency.cancelScheduledValues(audioCtx.currentTime);
+    filterNode.frequency.setValueAtTime(filterNode.frequency.value, audioCtx.currentTime);
+    if (phase === 'inhale') {
+      filterNode.frequency.linearRampToValueAtTime(1600, audioCtx.currentTime + INHALE);
+    } else {
+      filterNode.frequency.linearRampToValueAtTime(280, audioCtx.currentTime + EXHALE);
+    }
+  }
+
+  function shutdownAudio() {
+    try { if (noiseSource) noiseSource.stop(); } catch (e) {}
+    try { if (oscL) oscL.stop(); } catch (e) {}
+    try { if (oscR) oscR.stop(); } catch (e) {}
+    try { if (audioCtx) audioCtx.close(); } catch (e) {}
+    noiseSource = oscL = oscR = filterNode = gainNature = gainBinL = gainBinR = audioCtx = null;
+  }
+
+  /* ═══════════════════════════════
+     SESSION CONTROL
+  ═══════════════════════════════ */
+  function startSession() {
+    setupPanel.style.display   = 'none';
+    sessionPanel.style.display = 'flex';
+    donePanel.style.display    = 'none';
+
+    sessionDuration = selectedMin * 60;
+    sessionStart    = performance.now();
+    cycleCount      = 0;
+    isRunning       = true;
+
+    startAudio();
+    beginPhase('inhale');
+    animFrame = requestAnimationFrame(tick);
+  }
+
+  function beginPhase(type) {
+    phaseType  = type;
+    phaseStart = performance.now();
+    modulateNoise(type);
+    if (type === 'inhale') {
+      cycleCount++;
+      cycleEl.textContent = 'Ciclo ' + cycleCount;
+      playTone(528, 0.28);
+      phaseLabel.textContent = 'Inspire...';
+    } else {
+      playTone(396, 0.28);
+      phaseLabel.textContent = 'Expire...';
+    }
+  }
+
+  function tick(now) {
+    if (!isRunning) return;
+
+    const elapsed   = (now - sessionStart) / 1000;
+    const remaining = sessionDuration - elapsed;
+    if (remaining <= 0) { finishSession(); return; }
+
+    /* Phase transition */
+    const phaseElapsed = (now - phaseStart) / 1000;
+    const phaseDur     = phaseType === 'inhale' ? INHALE : EXHALE;
+    if (phaseElapsed >= phaseDur) {
+      beginPhase(phaseType === 'inhale' ? 'exhale' : 'inhale');
+    }
+
+    /* Timer & progress */
+    const phaseProgress = Math.min(phaseElapsed / phaseDur, 1);
+    phaseTimer.textContent  = Math.ceil(phaseDur - phaseElapsed);
+    progressFill.style.width = ((elapsed / sessionDuration) * 100).toFixed(1) + '%';
+
+    const m = Math.floor(remaining / 60);
+    const s = Math.floor(remaining % 60);
+    timeLeft.textContent = m + ':' + (s < 10 ? '0' : '') + s + ' restantes';
+
+    /* Live binaural readout */
+    const mode       = MODES[binauralMode];
+    const progress   = elapsed / sessionDuration;
+    const currentBeat = mode.beatStart + (mode.beatEnd - mode.beatStart) * progress;
+    binauralLive.textContent = currentBeat.toFixed(1) + ' Hz';
+    bandLabel.textContent    = currentBeat >= 8 ? 'Alpha' : currentBeat >= 4 ? 'Theta' : 'Delta';
+
+    drawBreath(phaseProgress, phaseType);
+    animFrame = requestAnimationFrame(tick);
+  }
+
+  function stopSession() {
+    isRunning = false;
+    if (animFrame) cancelAnimationFrame(animFrame);
+    shutdownAudio();
+    const elapsed = Math.floor((performance.now() - sessionStart) / 1000);
+    showDone(elapsed);
+  }
+
+  function finishSession() {
+    isRunning = false;
+    shutdownAudio();
+    setTimeout(() => playTone(528, 1.8), 100);
+    showDone(sessionDuration);
+  }
+
+  function showDone(seconds) {
+    sessionPanel.style.display = 'none';
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    const timeStr = m > 0 ? m + ' min' + (s > 0 ? ' ' + s + 's' : '') : s + 's';
+    const mode = MODES[binauralMode];
+    doneSummary.textContent =
+      'Você praticou por ' + timeStr + ', completou ' + cycleCount +
+      ' ciclos de respiração e percorreu de ' + mode.label + ' até ' + mode.endLabel + '.';
+    donePanel.style.display = 'flex';
+    ctx.clearRect(0, 0, 220, 220);
+  }
+
+  function resetToSetup() {
+    donePanel.style.display    = 'none';
+    sessionPanel.style.display = 'none';
+    setupPanel.style.display   = 'flex';
+    progressFill.style.width   = '0%';
+    phaseTimer.textContent     = '-';
+    cycleEl.textContent        = 'Ciclo 0';
+  }
+
+  /* ═══════════════════════════════
+     CANVAS ANIMATION
+  ═══════════════════════════════ */
+  function drawBreath(progress, phase) {
+    const w = 220, h = 220, cx = 110, cy = 110;
+    ctx.clearRect(0, 0, w, h);
+
+    const minR = 38, maxR = 90;
+    const t = phase === 'inhale' ? easeInOut(progress) : 1 - easeInOut(progress);
+    const r = minR + (maxR - minR) * t;
+
+    /* Glow rings */
+    for (let i = 4; i >= 1; i--) {
+      ctx.beginPath();
+      ctx.arc(cx, cy, r + i * 10, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(29,158,117,' + (0.045 * i) + ')';
+      ctx.fill();
+    }
+
+    /* Main circle */
+    const grad = ctx.createRadialGradient(cx, cy - r * 0.18, r * 0.08, cx, cy, r);
+    if (phase === 'inhale') {
+      grad.addColorStop(0, 'rgba(93,202,165,0.96)');
+      grad.addColorStop(1, 'rgba(15,110,86,0.90)');
+    } else {
+      grad.addColorStop(0, 'rgba(29,158,117,0.88)');
+      grad.addColorStop(1, 'rgba(8,80,65,0.82)');
+    }
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    /* Progress arc */
+    ctx.beginPath();
+    ctx.arc(cx, cy, r + 7, -Math.PI / 2, progress * Math.PI * 2 - Math.PI / 2);
+    ctx.strokeStyle = 'rgba(157,225,201,0.80)';
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+  }
+
+  function easeInOut(t) {
+    return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+  }
+
+})();
+</script>
+</body>
+</html>
